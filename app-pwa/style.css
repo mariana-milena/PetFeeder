@@ -3,8 +3,8 @@
   --bg: #fff6ec; /* fundo geral — creme bem claro, aquecido */
   --surface: #ffffff; /* cards */
   --ink: #201a12; /* contorno, texto, sombra dura */
-  --orange: #ff6b2c; /* acao primaria */
-  --orange-deep: #e6501a; /* hover/pressed */
+  --orange: #ffa3a3; /* acao primaria */
+  --orange-deep: #ff425b; /* hover/pressed */
   --orange-soft: #ffe0c2; /* trilhos, fundos secundarios */
 
   --status-good: #2f9e57;
