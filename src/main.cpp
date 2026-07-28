@@ -1,10 +1,5 @@
 //+------------------------------------------------------------------+
 // PetFeeder IoT - Firmware Principal
-// Versão 3: Agendamento diario recorrente por horario via NTP
-//
-// Hardware:  ESP32-WROOM-32 (Xtensa LX6, 240 MHz, 32-bit)
-// Framework: Arduino (PlatformIO)
-// Protocolo: MQTT via broker publico HiveMQ
 //+------------------------------------------------------------------+
 
 #include <Arduino.h>
@@ -141,7 +136,7 @@ void loop()
 
 //+------------------------------------------------------------------+
 // Conexao Wi-Fi com Timeout
-// Unico ponto bloqueante legitimo: sem WiFi nao ha IoT possivel.
+// Unico ponto bloqueante legitimo, pois sem WiFi nao ha IoT possivel.
 // Apos 30 tentativas (15s) reinicia o MCU automaticamente.
 //+------------------------------------------------------------------+
 void ConectarWiFi()
@@ -178,15 +173,6 @@ void ConectarWiFi()
 
 //+------------------------------------------------------------------+
 // Sincronizacao NTP (chamada uma vez no setup, apos WiFi conectado)
-//
-// configTime() configura o servidor e o fuso horario.
-// getLocalTime() com timeout baixo (10 ms) evita bloqueio:
-//   - se a resposta chegar, b_ntp_sincronizado = true
-//   - se nao chegar (sem internet), o firmware continua sem agenda
-//     (VerificarAgendaDiaria retorna cedo enquanto a flag for false)
-//
-// Apos a 1a sincronizacao, o ESP32 mantem o relogio internamente
-// com seu oscilador interno (nao precisa sincronizar de novo).
 //+------------------------------------------------------------------+
 void SincronizarNtp()
 {
@@ -229,7 +215,6 @@ void SincronizarNtp()
 //+------------------------------------------------------------------+
 // Obtem Hora e Minuto Atuais via Relogio Interno do ESP32
 // Retorna true se a leitura foi bem-sucedida, false caso contrario.
-// Timeout de 10 ms: nao bloqueia o loop() de forma perceptivel.
 //+------------------------------------------------------------------+
 bool ObterHoraAtual(uint8_t *p_u8_hora, uint8_t *p_u8_minuto)
 {
@@ -250,8 +235,8 @@ bool ObterHoraAtual(uint8_t *p_u8_hora, uint8_t *p_u8_minuto)
 // Reconexao MQTT Nao-Bloqueante (tenta a cada 5 segundos)
 //
 // O connect() registra um Last Will: se este ESP32 cair sem desconectar
-// direito (queda de energia, WiFi cortado), o PROPRIO BROKER publica
-// "offline" (retained) em ca_topic_device_status em nome dele. Por isso
+// direito (queda de energia, WiFi cortado), o proprio broker publica
+// "offline" em ca_topic_device_status em nome dele. Por isso
 // o app consegue detectar uma queda mesmo sem o firmware fazer nada.
 //+------------------------------------------------------------------+
 void ConectarMQTT()
@@ -271,9 +256,7 @@ void ConectarMQTT()
             mqttClient.subscribe(ca_topic_feed_cmd);
             mqttClient.subscribe(ca_topic_feed_schedule);
 
-            // Confirma que esta conexao especifica esta online (o Last
-            // Will so cobre o caso de queda; a confirmacao de "online" e
-            // responsabilidade do firmware mesmo)
+            // Confirma que esta conexao especifica esta online
             mqttClient.publish(ca_topic_device_status, "online", true);
 
             // Publica o estado atual da agenda para quem estiver ouvindo
@@ -336,7 +319,7 @@ void CallbackMQTT(char *p_topic, uint8_t *p_payload, unsigned int ui_length)
 //
 // Slots sao alocados sequencialmente. Se todos estiverem ocupados,
 // o slot 0 e sobrescrito (comportamento documentado e previsivel).
-// Para liberar um slot especifico, use "CLEAR" e reconfigure os demais.
+// Para liberar um slot especifico, usar "CLEAR" e reconfigure os demais.
 //+------------------------------------------------------------------+
 void ProcessarComandoAgenda(const char *pca_payload)
 {
@@ -456,9 +439,6 @@ void ProcessarComandoAgenda(const char *pca_payload)
 //+------------------------------------------------------------------+
 // Parser do Formato "HH:MM"
 //
-// Valida rigorosamente sem usar sscanf/atoi (evita dependencias de
-// tipos primitivos nao especificados conforme guia LASEC/FEELT).
-//
 // Regras de validacao:
 //   - Comprimento exato de 5 caracteres
 //   - Posicao 2 deve ser ':'
@@ -493,11 +473,6 @@ bool ExtrairHoraMinuto(const char *pca_texto, uint8_t *p_u8_hora, uint8_t *p_u8_
 
 //+------------------------------------------------------------------+
 // Parser dos Comandos "ON:n", "OFF:n" e "DEL:n"
-//
-// Valida rigorosamente sem usar sscanf/atoi, no mesmo estilo de
-// ExtrairHoraMinuto: exige prefixo exato seguido de um unico digito
-// (0-9) e nada mais, e confere se o digito esta dentro da faixa de
-// slots validos (0 a DEF_MAX_SCHEDULE_SLOTS-1).
 //+------------------------------------------------------------------+
 bool ExtrairComandoSlot(const char *pca_texto, const char *pca_prefixo, uint8_t *p_u8_slot)
 {
@@ -526,10 +501,6 @@ bool ExtrairComandoSlot(const char *pca_texto, const char *pca_prefixo, uint8_t 
 //
 // Formato: "slot,HH:MM,ativo;slot,HH:MM,ativo;..." para os
 // DEF_MAX_SCHEDULE_SLOTS slots, nesta ordem.
-//
-// Um slot com hora=0, minuto=0 e ativo=false e tratado como "nunca
-// configurado" e publicado com o campo HH:MM vazio (ex: "2,,0;"),
-// distinguindo-o na UI de um horario real que foi apenas desativado.
 //+------------------------------------------------------------------+
 void PublicarStatusAgenda()
 {
@@ -567,11 +538,6 @@ void PublicarStatusAgenda()
 
 //+------------------------------------------------------------------+
 // Grava a Agenda Inteira na Memoria Flash (NVS via Preferences)
-//
-// Chamada em todo ponto que muda a agenda (add/CLEAR/ON/OFF/DEL),
-// junto com PublicarStatusAgenda(). Grava ast_agenda como um bloco
-// binario unico sob a chave "slots" do namespace "agenda" — simples
-// porque a struct SlotAgenda_t so tem campos primitivos (POD).
 //+------------------------------------------------------------------+
 void SalvarAgendaFlash()
 {
@@ -597,16 +563,6 @@ void SalvarAgendaFlash()
 
 //+------------------------------------------------------------------+
 // Restaura a Agenda da Memoria Flash (chamada uma vez no setup)
-//
-// Le o bloco binario salvo por SalvarAgendaFlash(). Se o tamanho nao
-// bater (ex: 1a inicializacao, sem nada salvo ainda), mantem a agenda
-// zerada como esta por padrao.
-//
-// Limitacao documentada: b_disparadoHoje sempre volta para false apos
-// o boot, porque nao ha data salva para saber se "hoje" ainda e o
-// mesmo dia da ultima gravacao. Na pratica, se a queda de energia
-// ocorrer bem no minuto do disparo, aquele slot pode disparar de novo
-// apos reiniciar.
 //+------------------------------------------------------------------+
 void CarregarAgendaFlash()
 {
@@ -720,7 +676,7 @@ void TratarMotorRosca()
 //+------------------------------------------------------------------+
 // Leitura do Sensor VL53L0X e Alerta de Nivel Baixo
 // Executa a cada DEF_SENSOR_READ_MS (nao-bloqueante).
-// Leituras invalidas (RangeStatus != 0 ou >= 8190 mm) sao ignoradas.
+// Leituras invalidas sao ignoradas.
 //+------------------------------------------------------------------+
 void LerSensorDistancia()
 {
