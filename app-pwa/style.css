@@ -1,6 +1,6 @@
 :root {
-  /* -- cor: neobrutalista fofo, laranja sobre fundo claro -- */
-  --bg: #fff6ec; /* fundo geral — creme bem claro, aquecido */
+  /* -- cor: neobrutalista, salmão sobre fundo claro -- */
+  --bg: #fff6ec; /* fundo geral, creme bem claro, aquecido */
   --surface: #ffffff; /* cards */
   --ink: #201a12; /* contorno, texto, sombra dura */
   --orange: #ffa3a3; /* acao primaria */
@@ -21,7 +21,7 @@
   --shadow-off: 4px;
 }
 
-/* Fundo claro sempre — sem variante escura automatica por design aqui. */
+/* Fundo claro sempre, sem variante escura automatica por design aqui. */
 
 * {
   box-sizing: border-box;

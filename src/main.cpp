@@ -49,7 +49,7 @@ bool         b_ntp_sincronizado                  = false;
 SlotAgenda_t ast_agenda[DEF_MAX_SCHEDULE_SLOTS]  = {0};
 
 volatile bool b_feed_requested      = false;
-volatile bool b_schedule_active     = false;  // mantida por compatibilidade
+volatile bool b_schedule_active     = false;  
 volatile bool b_is_empty_alert_sent = false;
 
 //+------------------------------------------------------------------+

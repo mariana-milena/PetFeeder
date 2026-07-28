@@ -4,7 +4,6 @@
 //+------------------------------------------------------------------+
 // PetFeeder IoT
 // global_vars.h 
-// v3.0: Agendamento diario recorrente por horario via NTP
 //+------------------------------------------------------------------+
 
 #include <stdint.h>
@@ -20,18 +19,18 @@
 // Sensor VL53L0X - Parametros de Calibracao
 //
 // Logica: reservatorio CHEIO = distancia PEQUENA (racao perto do sensor)
-//         reservatorio VAZIO = distancia GRANDE  (sensor ve o fundo)
+//         reservatorio VAZIO = distancia GRANDE 
 // Dispara alerta quando: ui_distance_mm > DEF_EMPTY_DISTANCE_MM
 //+------------------------------------------------------------------+
 #define DEF_EMPTY_DISTANCE_MM    80  // Distancia do sensor para reservatorio vazio (mm) 
-#define DEF_RANGE_INVALID      8190  // Valor de saturacao do VL53L0X (sem alvo)
-#define DEF_SENSOR_READ_MS    15000  // Intervalo de leitura do sensor (ms)
-#define DEF_DEBUG_INTERVAL_MS 20000  // Intervalo do print de debug serial (ms)
+#define DEF_RANGE_INVALID       300  // Valor de saturacao do VL53L0X (sem alvo)
+#define DEF_SENSOR_READ_MS      300  // Intervalo de leitura do sensor (ms)
+#define DEF_DEBUG_INTERVAL_MS   400  // Intervalo do print de debug serial (ms)
 
 //+------------------------------------------------------------------+
 // Motor - Temporização
 //+------------------------------------------------------------------+
-#define DEF_AUGER_RUN_TIME_MS   3000  // Tempo de giro da rosca por dose (ms)
+#define DEF_AUGER_RUN_TIME_MS   5000  // Tempo de giro da rosca por dose (ms)
 
 //+------------------------------------------------------------------+
 // NTP - Sincronizacao de Horario pela Internet
@@ -53,7 +52,7 @@
 //
 // A agenda e persistida na memoria flash (NVS via Preferences) toda vez
 // que muda, e restaurada automaticamente no boot (SalvarAgendaFlash /
-// CarregarAgendaFlash em main.cpp) — sobrevive a queda de energia.
+// CarregarAgendaFlash em main.cpp) e sobrevive a queda de energia.
 //
 // Interface MQTT (topico ca_topic_feed_schedule):
 //   Payload "HH:MM"   -> adiciona horario recorrente (ex: "06:00")
@@ -85,11 +84,6 @@ typedef struct
 
 //+------------------------------------------------------------------+
 // Topicos MQTT
-//
-// ca_topic_device_status usa o recurso de "Last Will and Testament" do
-// MQTT: e o proprio broker (nao o firmware) quem publica "offline" nele
-// se o ESP32 cair sem desconectar direito (queda de energia, WiFi cortado).
-// O firmware so publica "online" apos conectar com sucesso.
 //+------------------------------------------------------------------+
 extern const char ca_topic_feed_cmd[];       // Despejo imediato
 extern const char ca_topic_feed_schedule[];  // Gerenciar agenda (HH:MM / CLEAR / LIST / ON:n / OFF:n / DEL:n)
@@ -117,7 +111,7 @@ extern SlotAgenda_t ast_agenda[DEF_MAX_SCHEDULE_SLOTS];   // Tabela de horarios
 
 // Flags de eventos (volatile: escritas no callback MQTT, lidas no loop)
 extern volatile bool b_feed_requested;
-extern volatile bool b_schedule_active;   // Mantida para compatibilidade (nao usada na v3)
+extern volatile bool b_schedule_active;   
 extern volatile bool b_is_empty_alert_sent;
 
 #endif // GLOBAL_VARS_H

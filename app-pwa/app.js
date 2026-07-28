@@ -44,9 +44,9 @@
     appConnText.textContent = APP_CONN_LABELS[state] || state;
   }
 
-  // Status do COMEDOURO: vem do ESP32 via petfeeder/status/dispositivo.
-  // "online" e publicado pelo firmware ao conectar; "offline" e publicado
-  // pelo PROPRIO BROKER (Last Will) se o ESP32 cair sem avisar.
+  // Status do comedouro: vem do ESP32 via petfeeder/status/dispositivo.
+  // "online" e publicado pelo firmware ao conectar e "offline" e publicado
+  // pelo proprio broker (Last Will) se o ESP32 cair sem avisar.
   const DEVICE_LABELS = {
     unknown: "Comedouro: ?",
     online: "Comedouro: online",
@@ -168,9 +168,9 @@
     return li;
   }
 
-  // 3000ms casa com DEF_AUGER_RUN_TIME_MS do firmware — o botao fica
+  // 5000ms casa com DEF_AUGER_RUN_TIME_MS do firmware, ou seja, o botao fica
   // desabilitado pelo tempo real de giro do motor, nao um numero arbitrario.
-  const AUGER_RUN_MS = 3000;
+  const AUGER_RUN_MS = 5000;
 
   btnDispense.addEventListener("click", () => {
     client.publish(TOPIC_CMD_IMEDIATO, "1");
