@@ -118,7 +118,8 @@ body {
 }
 
 .status-chip[data-state="connected"] .dot,
-.status-chip[data-state="online"] .dot {
+.status-chip[data-state="online"] .dot,
+.status-chip[data-state="ok"] .dot {
   background: var(--status-good);
 }
 
@@ -128,7 +129,8 @@ body {
 }
 
 .status-chip[data-state="offline"] .dot,
-.status-chip[data-state="error"] .dot {
+.status-chip[data-state="error"] .dot,
+.status-chip[data-state="vazio"] .dot {
   background: var(--status-bad);
 }
 

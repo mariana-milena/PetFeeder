@@ -64,6 +64,7 @@ void ProcessarComandoAgenda(const char *pca_payload);
 bool ExtrairHoraMinuto(const char *pca_texto, uint8_t *p_u8_hora, uint8_t *p_u8_minuto);
 bool ExtrairComandoSlot(const char *pca_texto, const char *pca_prefixo, uint8_t *p_u8_slot);
 void PublicarStatusAgenda();
+void PublicarStatusSensor();
 void SalvarAgendaFlash();
 void CarregarAgendaFlash();
 void ImprimirAgenda();
@@ -262,6 +263,11 @@ void ConectarMQTT()
             // Publica o estado atual da agenda para quem estiver ouvindo
             // (ex: o app) receber a lista real assim que conectar
             PublicarStatusAgenda();
+
+            // Idem para o estado do sensor (mesmo que ainda seja o valor
+            // padrao "ok" de antes da 1a leitura — se real for "vazio",
+            // a proxima leitura corrige em ate DEF_SENSOR_READ_MS)
+            PublicarStatusSensor();
         }
         else
         {
@@ -537,6 +543,28 @@ void PublicarStatusAgenda()
 }
 
 //+------------------------------------------------------------------+
+// Publica o Estado Atual do Sensor de Nivel (MQTT, retained)
+//
+// Reaproveita ca_topic_alert_empty, que passa a carregar um estado
+// retained simples ("vazio" ou "ok") em vez de uma frase de alerta
+// unica. Chamada so quando b_is_empty_alert_sent muda de valor (em
+// LerSensorDistancia) e uma vez ao conectar no broker, para quem
+// assinar o topico ja receber o estado atual sem esperar a proxima
+// transicao.
+//+------------------------------------------------------------------+
+void PublicarStatusSensor()
+{
+    const char *pca_estado = (b_is_empty_alert_sent == true) ? "vazio" : "ok";
+
+    mqttClient.publish(ca_topic_alert_empty, pca_estado, true);
+
+    Serial.print("[MQTT ENVIADO] ");
+    Serial.print(ca_topic_alert_empty);
+    Serial.print(" | ");
+    Serial.println(pca_estado);
+}
+
+//+------------------------------------------------------------------+
 // Grava a Agenda Inteira na Memoria Flash (NVS via Preferences)
 //+------------------------------------------------------------------+
 void SalvarAgendaFlash()
@@ -674,9 +702,10 @@ void TratarMotorRosca()
 }
 
 //+------------------------------------------------------------------+
-// Leitura do Sensor VL53L0X e Alerta de Nivel Baixo
+// Leitura do Sensor VL53L0X e Deteccao de Nivel Baixo
 // Executa a cada DEF_SENSOR_READ_MS (nao-bloqueante).
 // Leituras invalidas sao ignoradas.
+// Publica o estado (via PublicarStatusSensor) so quando ele muda.
 //+------------------------------------------------------------------+
 void LerSensorDistancia()
 {
@@ -702,17 +731,17 @@ void LerSensorDistancia()
             {
                 if (b_is_empty_alert_sent == false)
                 {
-                    mqttClient.publish(ca_topic_alert_empty, "ALERTA: Recipiente vazio");
                     b_is_empty_alert_sent = true;
-
-                    Serial.print("[MQTT ENVIADO] ");
-                    Serial.print(ca_topic_alert_empty);
-                    Serial.println(" | ALERTA: Recipiente vazio");
+                    PublicarStatusSensor();
                 }
             }
             else
             {
-                b_is_empty_alert_sent = false;
+                if (b_is_empty_alert_sent == true)
+                {
+                    b_is_empty_alert_sent = false;
+                    PublicarStatusSensor();
+                }
             }
         }
     }

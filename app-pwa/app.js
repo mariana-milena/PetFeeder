@@ -7,11 +7,14 @@
   const TOPIC_CMD_AGENDAR = "petfeeder/cmd/agendar";
   const TOPIC_STATUS_AGENDA = "petfeeder/status/agenda";
   const TOPIC_STATUS_DEVICE = "petfeeder/status/dispositivo";
+  const TOPIC_STATUS_SENSOR = "petfeeder/alerta/vazio";
 
   const appConnStatus = document.getElementById("app-conn-status");
   const appConnText = document.getElementById("app-conn-text");
   const deviceConnStatus = document.getElementById("device-conn-status");
   const deviceConnText = document.getElementById("device-conn-text");
+  const sensorStatus = document.getElementById("sensor-status");
+  const sensorText = document.getElementById("sensor-text");
   const btnDispense = document.getElementById("btn-dispense");
   const dispenseFeedback = document.getElementById("dispense-feedback");
   const btnNew = document.getElementById("btn-new");
@@ -58,13 +61,29 @@
     deviceConnText.textContent = DEVICE_LABELS[state] || state;
   }
 
+  // Status do sensor de nivel: vem do ESP32 via petfeeder/alerta/vazio
+  // (retained). "vazio"/"ok" so mudam quando o firmware detecta uma
+  // transicao real na leitura do sensor — nao e um valor continuo.
+  const SENSOR_LABELS = {
+    unknown: "Ração: ?",
+    ok: "Ração: ok",
+    vazio: "Ração: vazia",
+  };
+
+  function setSensorState(state) {
+    sensorStatus.dataset.state = state;
+    sensorText.textContent = SENSOR_LABELS[state] || state;
+  }
+
   setAppConnState("connecting");
   setDeviceState("unknown");
+  setSensorState("unknown");
 
   client.on("connect", () => {
     setAppConnState("connected");
     client.subscribe(TOPIC_STATUS_AGENDA);
     client.subscribe(TOPIC_STATUS_DEVICE);
+    client.subscribe(TOPIC_STATUS_SENSOR);
   });
 
   client.on("reconnect", () => setAppConnState("reconnecting"));
@@ -81,6 +100,9 @@
     } else if (topic === TOPIC_STATUS_DEVICE) {
       const value = payload.toString();
       setDeviceState(value === "online" ? "online" : "offline");
+    } else if (topic === TOPIC_STATUS_SENSOR) {
+      const value = payload.toString();
+      setSensorState(value === "vazio" ? "vazio" : "ok");
     }
   });
 

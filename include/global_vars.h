@@ -22,10 +22,10 @@
 //         reservatorio VAZIO = distancia GRANDE 
 // Dispara alerta quando: ui_distance_mm > DEF_EMPTY_DISTANCE_MM
 //+------------------------------------------------------------------+
-#define DEF_EMPTY_DISTANCE_MM    80  // Distancia do sensor para reservatorio vazio (mm) 
-#define DEF_RANGE_INVALID       300  // Valor de saturacao do VL53L0X (sem alvo)
-#define DEF_SENSOR_READ_MS      300  // Intervalo de leitura do sensor (ms)
-#define DEF_DEBUG_INTERVAL_MS   400  // Intervalo do print de debug serial (ms)
+#define DEF_EMPTY_DISTANCE_MM   150  // Distancia do sensor para reservatorio vazio (mm) 
+#define DEF_RANGE_INVALID       250  // Valor de saturacao do VL53L0X (sem alvo)
+#define DEF_SENSOR_READ_MS      1000  // Intervalo de leitura do sensor (ms)
+#define DEF_DEBUG_INTERVAL_MS   1100  // Intervalo do print de debug serial (ms)
 
 //+------------------------------------------------------------------+
 // Motor - Temporização
@@ -87,7 +87,7 @@ typedef struct
 //+------------------------------------------------------------------+
 extern const char ca_topic_feed_cmd[];       // Despejo imediato
 extern const char ca_topic_feed_schedule[];  // Gerenciar agenda (HH:MM / CLEAR / LIST / ON:n / OFF:n / DEL:n)
-extern const char ca_topic_alert_empty[];    // Publicar alerta de vazio
+extern const char ca_topic_alert_empty[];    // Estado do sensor: "vazio"/"ok" (retained)
 extern const char ca_topic_agenda_status[];  // Publicar estado da agenda (retained)
 extern const char ca_topic_device_status[];  // "online"/"offline" (retained, via LWT)
 
