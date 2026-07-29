@@ -22,15 +22,15 @@
 //         reservatorio VAZIO = distancia GRANDE 
 // Dispara alerta quando: ui_distance_mm > DEF_EMPTY_DISTANCE_MM
 //+------------------------------------------------------------------+
-#define DEF_EMPTY_DISTANCE_MM   150  // Distancia do sensor para reservatorio vazio (mm) 
+#define DEF_EMPTY_DISTANCE_MM   160  // Distancia do sensor para reservatorio vazio (mm) 
 #define DEF_RANGE_INVALID       250  // Valor de saturacao do VL53L0X (sem alvo)
-#define DEF_SENSOR_READ_MS      1000  // Intervalo de leitura do sensor (ms)
-#define DEF_DEBUG_INTERVAL_MS   1100  // Intervalo do print de debug serial (ms)
+#define DEF_SENSOR_READ_MS      10000  // Intervalo de leitura do sensor (ms)
+#define DEF_DEBUG_INTERVAL_MS   11000  // Intervalo do print de debug serial (ms)
 
 //+------------------------------------------------------------------+
 // Motor - Temporização
 //+------------------------------------------------------------------+
-#define DEF_AUGER_RUN_TIME_MS   5000  // Tempo de giro da rosca por dose (ms)
+#define DEF_AUGER_RUN_TIME_MS   10000  // Tempo de giro da rosca por dose (ms)
 
 //+------------------------------------------------------------------+
 // NTP - Sincronizacao de Horario pela Internet
